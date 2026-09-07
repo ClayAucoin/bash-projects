@@ -1,6 +1,6 @@
 # newproject.sh
 
-This script creates a new project folder structure inside your `~/class/projects` directory. It sets up common web project files, directories, and boilerplates automatically.
+This script creates a new project folder structure inside your `~/projects` directory. It sets up common web project files, directories, and boilerplates automatically.
 
 ## Overview
 
@@ -16,7 +16,7 @@ Run the script in Git Bash using:
 
 This creates the project folder at:
 
-    ~/class/projects/lv3/my-project/
+    ~/projects/lv3/my-project/
 
 You can replace `lv3/my-project` with any desired subdirectory path, such as:
 
@@ -26,7 +26,7 @@ You can replace `lv3/my-project` with any desired subdirectory path, such as:
 
 This would create:
 
-    ~/class/projects/capstone/movie-watchlist/
+    ~/projects/capstone/movie-watchlist/
 
 ## Structure
 
@@ -70,7 +70,7 @@ After running the script, your folder will look like this:
 
 ## Notes
 
-- The script uses your home directory `~/class/projects` as the base path.
+- The script uses your home directory `~/projects` as the base path.
 - You can safely edit the script to point to a different base directory if desired.
 - Remember to source the script with a leading dot (`.`) so it runs in your current shell.
 
