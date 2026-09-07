@@ -1,206 +1,187 @@
-# proj --- A Simple Project Picker for Git Bash
+# proj - Project Picker for Git Bash
 
-`proj` is a small helper function you can add to your `~/.bashrc` that lets you quickly jump into any sub-project in the current directory and optionally run common actions like opening the folder in VS Code or checking git status.
+`proj` is a Bash utility for quickly selecting and navigating into a subdirectory without repeatedly typing long project paths.
 
-This tool is ideal for directories that contain multiple project folders, such as:
+It is designed primarily for **Git Bash on Windows**.
 
-    ~/class/projects/lv4/
-      ├── lv4-api-first-server
-      ├── lv4-api-server-backend
-      ├── lv4-api-server-backend-redo
-      ├── lv4-api-server-frontend
-      └── ...
+This is especially useful for directories containing multiple projects, such as:
 
-Instead of typing paths over and over, you run `proj`, choose a number, and get to work immediately.
+```text id="mavnhu"
+~/class/projects/lv4/
+├── lv4-api-first-server/
+├── lv4-api-server-backend/
+├── lv4-api-server-backend-redo/
+├── lv4-api-server-frontend/
+└── ...
+```
 
----
+Instead of typing a complete directory name, run `proj`, choose a project by number, and select what you want to do with it.
 
 ## Features
 
-### ✔ Lists subdirectories in the current folder
+### Lists Subdirectories
 
-Each directory is displayed with a number so you can pick it quickly.
+`proj` displays the subdirectories of your current directory as a numbered list.
 
-### ✔ Jump into a directory by choosing its number
+### Select by Number
 
-No need to type long folder names manually.
+Choose a directory by entering its corresponding number instead of typing the full folder name.
 
-### ✔ Optional per-project actions
+### Project Actions
 
-After entering a project, you can choose to:
+After selecting a project, you can choose from several common actions:
 
-1.  Just enter the directory\
-2.  Open it in VS Code\
-3.  Show `git status`\
-4.  Open in VS Code and run `git status`
+1. Just enter the directory
+2. Open the project in VS Code
+3. Show `git status`
+4. Open the project in VS Code and show `git status`
 
-### ✔ Works directly in your shell
+### Changes Your Current Directory
 
-Since `proj` is a function and not a script, `cd` actually changes the directory in your current terminal session.
+Unlike a normal standalone Bash script, `proj` is sourced into the current shell through a small function in `~/.bashrc`.
 
----
-
-## Installation
-
-1.  Open your Git Bash terminal.
-2.  Edit your `.bashrc` file:
-
-```bash
-nano ~/.bashrc
-```
-
-3.  Paste the `proj` function into the file.
-4.  Save and reload your shell:
-
-```bash
-source ~/.bashrc
-```
-
-Now the `proj` command is available in every session.
-
----
+This allows `proj` to change the working directory of the Git Bash session you're currently using.
 
 ## Usage
 
-Navigate to a directory that contains project folders:
+Navigate to a directory containing your projects:
 
-```bash
+```bash id="y83hqh"
 cd ~/class/projects/lv4
 ```
 
 Run:
 
-```bash
+```bash id="ap1t0s"
 proj
 ```
 
-You'll see something like:
+You'll see a list similar to:
 
-    Current directory: /home/you/class/projects/lv4
+```text id="mpo7d1"
+Current directory: /c/Users/Administrator/class/projects/lv4
 
-    Subdirectories:
+Subdirectories:
 
-      1. lv4-api-first-server
-      2. lv4-api-server-backend
-      3. lv4-api-server-backend-redo
-      4. lv4-api-server-frontend
+   1. lv4-api-first-server
+   2. lv4-api-server-backend
+   3. lv4-api-server-backend-redo
+   4. lv4-api-server-frontend
 
-    Choose a directory by number (or 'q' to cancel):
+Choose a directory by number (or 'q' to cancel):
+```
 
 After selecting a directory, the action menu appears:
 
-    What would you like to do?
+```text id="28km9x"
+What would you like to do?
 
-      1) Just change directory (do nothing else)
-      2) Open in VS Code (code .)
-      3) Show git status
-      4) Open in VS Code and show git status
+  1) Just change directory (do nothing else)
+  2) Open in VS Code (code .)
+  3) Show git status
+  4) Open in VS Code and show git status
+```
 
-Choose an action, and you're ready to work.
+Choose an action and `proj` handles the rest.
 
----
+## Installation
 
-## The proj Function
+The actual `proj` script is stored in the `bash-projects` repository at:
 
-```bash
+```text id="cj76yh"
+~/projects/bash-projects/bash-dir-list-proj/proj
+```
+
+Because `proj` needs to change the current shell's working directory, it is sourced through a small function in `~/.bashrc` rather than launched as a normal executable from `~/bin`.
+
+Add the following to `~/.bashrc`:
+
+```bash id="ajik02"
 proj() {
-  dirs=(*/)
-
-  if [ "${#dirs[@]}" -eq 0 ]; then
-    echo "No subdirectories found."
-    return 1
-  fi
-
-  echo "Current directory: $(pwd)"
-  echo
-  echo "Subdirectories:"
-  echo
-  for i in "${!dirs[@]}"; do
-    printf "  %2d. %s\n" "$((i + 1))" "${dirs[$i]%/}"
-  done
-
-  echo
-  read -rp "Choose a directory by number (or 'q' to cancel): " choice
-
-  if [[ "$choice" =~ ^[Qq]$ ]]; then
-    echo "Cancelled."
-    return 0
-  fi
-
-  if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
-    echo "Error: '$choice' is not a number."
-    return 1
-  fi
-
-  index=$((choice - 1))
-
-  if (( index < 0 || index >= ${#dirs[@]} )); then
-    echo "Error: choice out of range."
-    return 1
-  fi
-
-  target="${dirs[$index]}"
-  cd "$target" || {
-    echo "Error: failed to cd into '$target'."
-    return 1
-  }
-
-  echo
-  echo "Now in: $(pwd)"
-  echo
-
-  echo "What would you like to do?"
-  echo
-  echo "  1) Just change directory (do nothing else)"
-  echo "  2) Open in VS Code (code .)"
-  echo "  3) Show git status"
-  echo "  4) Open in VS Code and show git status"
-
-  echo
-  read -rp "Choose an action [1]: " action
-  action=${action:-1}
-
-  echo
-
-  case "$action" in
-    1)
-      ;;
-    2)
-      echo "Opening VS Code..."
-      code . 2>/dev/null || echo "Could not run 'code .'. Make sure VS Code is installed and 'code' is on your PATH."
-      ;;
-    3)
-      echo "Running: git status"
-      git status || echo "Not a git repository or git not available."
-      ;;
-    4)
-      echo "Opening VS Code..."
-      code . 2>/dev/null || echo "Could not run 'code .'. Make sure VS Code is installed and 'code' is on your PATH."
-      echo
-      echo "Running: git status"
-      git status || echo "Not a git repository or git not available."
-      ;;
-    *)
-      echo "Unknown action '$action'. Doing nothing extra."
-      ;;
-  esac
-
-  echo
+  source ~/projects/bash-projects/bash-dir-list-proj/proj "$@"
 }
 ```
 
----
+Reload the Bash configuration:
+
+```bash id="35vuwp"
+source ~/.bashrc
+```
+
+The `proj` command will then be available in Git Bash:
+
+```bash id="13mkyy"
+proj
+```
+
+Complete repository setup instructions are available in the main [bash-projects README](https://github.com/ClayAucoin/bash-projects).
+
+## Why `proj` Uses a Bash Function
+
+The other utilities in this repository, such as `np` and `combine`, can use executable launchers in `~/bin`.
+
+`proj` is different because it needs to change the working directory of the current terminal.
+
+A normal Bash script runs in a separate child process. If that script runs:
+
+```bash id="pyu7ip"
+cd some-project
+```
+
+the directory changes only inside that child process. When the script exits, the original Git Bash session remains in its previous directory.
+
+The small `proj()` function in `~/.bashrc` solves this by sourcing the repository script:
+
+```bash id="dyyv3p"
+source ~/projects/bash-projects/bash-dir-list-proj/proj "$@"
+```
+
+This executes the repository script inside the current Bash session, allowing `cd` to affect the terminal you're actually using.
+
+The program itself remains in the Git repository, so there is only one copy of the `proj` logic to maintain.
+
+## Prerequisites
+
+- **Git Bash** on Windows, or a compatible Bash environment
+- **Git** for the `git status` actions
+- **Visual Studio Code** with the `code` command available in your `PATH` for the VS Code actions
+
+Git and VS Code are only required for their corresponding menu actions.
+
+## VS Code Support
+
+The VS Code actions use:
+
+```bash id="u9lfrj"
+code .
+```
+
+You can verify that the VS Code command is available by running:
+
+```bash id="ex6lj7"
+code --version
+```
+
+If that command works, `proj` should be able to open selected projects in VS Code.
 
 ## Notes
 
-- The script relies on `code` being available on your PATH.\ In VS Code, enable this under **Command Palette → "Shell Command: Install 'code' command in PATH"**.
-- This function is meant to be run from a directory containing only project folders.\ If you mix files and folders, only folders will be listed.
-
----
+- Run `proj` from a directory containing the project folders you want to choose from.
+- Only directories are included in the selection list. Regular files are ignored.
+- Enter `q` at the project-selection prompt to cancel.
+- The actual program code is maintained in the `bash-projects` Git repository.
+- The `~/.bashrc` function contains only the code necessary to source the repository script.
+- Changes committed or pulled into the repository version of `proj` are automatically used the next time `proj` runs.
 
 ## Future Ideas
 
-- Auto-detect Node projects (`package.json`) and show project-specific actions\
-- Add "Run dev server" for React/Vite projects\
-- Add fuzzy search by folder name\
-- Add bookmarking ("favorite projects")
+Possible future enhancements include:
+
+- Auto-detect Node projects using `package.json` and provide project-specific actions.
+- Add an option to start a React/Vite development server.
+- Add fuzzy searching by project name.
+- Add bookmarks or favorite projects.
+
+## License
+
+This script is provided freely for personal and educational use.
