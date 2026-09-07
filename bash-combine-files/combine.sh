@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+    #!/usr/bin/env bash
 set -euo pipefail
 
 echo "This script will combine file contents from the current directory (recursively)."
@@ -7,7 +7,13 @@ echo "Enter extensions to include (without the dot). Type '-' when finished."
 # --- collect extensions ---
 extensions=()
 while true; do
-  read -rp "Extension to include (or '-' for no more): " ext_raw
+  read -rp "Extension to include (or '-' for no more, 'q' to quit): " ext_raw
+
+  if [[ "$ext_raw" =~ ^[Qq]$ ]]; then
+    echo "Cancelled."
+    return 0
+  fi
+
   ext_trimmed="${ext_raw#"${ext_raw%%[![:space:]]*}"}"   # ltrim
   ext_trimmed="${ext_trimmed%"${ext_trimmed##*[![:space:]]}"}"   # rtrim
   ext_lower=$(printf "%s" "$ext_trimmed" | tr '[:upper:]' '[:lower:]')
@@ -21,6 +27,13 @@ while true; do
   fi
   extensions+=("$ext")
 done
+
+# Allow quitting
+if [[ "$ext_raw" =~ ^[Qq]$ ]]; then
+  echo "Cancelled."
+  cd ../
+  return 0
+fi
 
 if (( ${#extensions[@]} == 0 )); then
   echo "No extensions provided. Exiting."

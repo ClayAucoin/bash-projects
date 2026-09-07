@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_DIR=~/class/projects
+BASE_DIR=~/projects
 
 if [ -z "${1:-}" ]; then
   echo "Usage: newproject <subdir/project-name>"
@@ -243,9 +243,13 @@ case "$choice" in
     # ----------------------------
     # Empty project
     # ----------------------------
-    echo "Empty project '$PROJECT_NAME' folder created at $PROJECT_PATH"
-    echo "You are now in: $(pwd)"
-    CREATED="empty"
+
+    curl -fsSL -o README.md \
+      https://clayaucoin.github.io/snippets/readme/README.md
+
+    git_init_commit
+
+    echo "Empty project '$PROJECT_NAME' created in $PROJECT_PATH"
     ;;
 
   *)
